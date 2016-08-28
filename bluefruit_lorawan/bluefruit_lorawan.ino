@@ -72,6 +72,7 @@ const uint8_t  LoRaWAN_CMD_SendAck           = 0x21;
 const uint8_t  LoRaWAN_CMD_SendEmpty         = 0x22;
 const uint8_t  LoRaWAN_CMD_SendEmptyAck      = 0x23;
 const uint8_t  LoRaWAN_CMD_Reset             = 0x40;
+const uint8_t  LoRaWAN_CMD_Save              = 0x50;
 // Status constants
 const uint8_t  LoRaWAN_STS_None              = 0;
 const uint8_t  LoRaWAN_STS_OTASuccess        = 1;
@@ -324,6 +325,9 @@ void loop() {
       led_off();
       RN2483_connected = 0;
       gatt.setChar(_con_id, RN2483_connected);
+      sts = LoRaWAN_STS_OK;
+    } else if (cmd == LoRaWAN_CMD_Save) {
+      updateKeys();
       sts = LoRaWAN_STS_OK;
     } else if ((cmd & LoRaWAN_CMD_Mask) == LoRaWAN_CMD_Send) {
       if (RN2483_connected) {
