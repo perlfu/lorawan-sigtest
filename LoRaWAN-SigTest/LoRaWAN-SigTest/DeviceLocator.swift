@@ -14,6 +14,7 @@ class DeviceLocator: NSObject, CBCentralManagerDelegate {
     
     let kServiceUUID = CBUUID(string: "3A76BBF7-351A-4276-B4D6-C30F16944084")
     
+    let log = LoRaWANLog.shared
     var manager : CBCentralManager!
     var queue : dispatch_queue_t!
     var devicePeripheral : CBPeripheral?
@@ -25,12 +26,12 @@ class DeviceLocator: NSObject, CBCentralManagerDelegate {
         searching = true
         
         if manager == nil {
-            print("DeviceLocator: setup central")
+            log.add("DeviceLocator: setup central")
             queue = dispatch_queue_create("uk.co.perlfu.LoRaWAN-Locator", DISPATCH_QUEUE_SERIAL)
             manager = CBCentralManager(delegate: self, queue: queue)
         }
         
-        print("DeviceLocator: findDevice initiated")
+        log.add("DeviceLocator: findDevice initiated")
         if let device = device {
             device.disconnect()
         }
@@ -40,13 +41,13 @@ class DeviceLocator: NSObject, CBCentralManagerDelegate {
     }
     
     func centralManager(central: CBCentralManager, didDiscoverPeripheral peripheral: CBPeripheral, advertisementData: [String : AnyObject], RSSI: NSNumber) {
-        print("DeviceLocator: got \(peripheral)")
+        log.add("DeviceLocator: got \(peripheral)")
         // Validate peripheral information
         if ((peripheral.name == nil) || (peripheral.name == "")) {
             return
         }
         if peripheral.name == "LoRaWAN-SigTest" {
-            print("DeviceLocator: ending search")
+            log.add("DeviceLocator: ending search")
             devicePeripheral = peripheral
             manager.stopScan()
             searching = false
@@ -55,18 +56,18 @@ class DeviceLocator: NSObject, CBCentralManagerDelegate {
     }
     
     func centralManager(central: CBCentralManager, didConnectPeripheral peripheral: CBPeripheral) {
-        print("DeviceLocator: got connection")
+        log.add("DeviceLocator: got connection")
         if peripheral == devicePeripheral {
             device = LoRaWANDevice(peripheral: peripheral)
             device!.delegate = delegate
             device!.connect()
         } else {
-            print("DeviceLocator: connected to unknown device")
+            log.add("DeviceLocator: connected to unknown device")
         }
     }
     
     func centralManager(central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: NSError?) {
-        print("DeviceLocator: disconnect \(peripheral)")
+        log.add("DeviceLocator: disconnect \(peripheral)")
     }
     
     func centralManagerDidUpdateState(central: CBCentralManager) {
@@ -75,6 +76,6 @@ class DeviceLocator: NSObject, CBCentralManagerDelegate {
                 manager.scanForPeripheralsWithServices([kServiceUUID], options: nil)
             }
         }
-        print("DeviceLocator: state update \(central.state.rawValue)")
+        log.add("DeviceLocator: state update \(central.state.rawValue)")
     }
 }

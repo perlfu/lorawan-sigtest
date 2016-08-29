@@ -47,6 +47,8 @@ class LoRaWANDevice : NSObject, CBPeripheralDelegate {
     let stsNoAcknowledgment  : UInt8 = 11
     let stsUnknown           : UInt8 = 127
     
+    let log = LoRaWANLog.shared
+    
     var devicePeripheral : CBPeripheral!
     var delegate : LoRaWANDelegate?
     var _ready = false
@@ -116,7 +118,7 @@ class LoRaWANDevice : NSObject, CBPeripheralDelegate {
     }
     
     func peripheral(peripheral: CBPeripheral, didDiscoverServices error: NSError?) {
-        print("LoRaWANDevice: didDiscoverServices")
+        log.add("LoRaWANDevice: didDiscoverServices")
         if error != nil {
             return
         }
@@ -129,7 +131,7 @@ class LoRaWANDevice : NSObject, CBPeripheralDelegate {
     }
     
     func peripheral(peripheral: CBPeripheral, didDiscoverCharacteristicsForService service: CBService, error: NSError?) {
-        print("LoRaWANDevice: didDiscoverCharacteristicsForService")
+        log.add("LoRaWANDevice: didDiscoverCharacteristicsForService")
         if error != nil {
             return
         }
@@ -155,7 +157,7 @@ class LoRaWANDevice : NSObject, CBPeripheralDelegate {
         
         let ready = self.ready()
         
-        print("LoRaWANDevice: ready=\(ready)")
+        log.add("LoRaWANDevice: ready=\(ready)")
         
         if ready {
             self.configureDevice()
@@ -173,18 +175,18 @@ class LoRaWANDevice : NSObject, CBPeripheralDelegate {
     }
     
     func peripheral(peripheral: CBPeripheral, didUpdateNotificationStateForCharacteristic characteristic: CBCharacteristic, error: NSError?) {
-        print("LoRaWANDevice: notify \(characteristic.UUID)")
+        log.add("LoRaWANDevice: notify \(characteristic.UUID)")
     }
     
     func peripheral(peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: NSError?) {
-        print("LoRaWANDevice: rssi \(RSSI)")
+        log.add("LoRaWANDevice: rssi \(RSSI)")
         rssi = RSSI
     }
 
     func peripheral(peripheral: CBPeripheral, didUpdateValueForCharacteristic characteristic: CBCharacteristic, error: NSError?) {
-        print("LoRaWANDevice: update \(characteristic.UUID)")
+        log.add("LoRaWANDevice: update \(characteristic.UUID)")
         if let value = characteristic.value {
-            print("data = \(value)")
+            log.add("LoRaWANDevice: update data = \(value)")
             state[characteristic.UUID.UUIDString] = value
             
             if let delegate = delegate {
@@ -199,7 +201,7 @@ class LoRaWANDevice : NSObject, CBPeripheralDelegate {
     }
     
     func peripheral(peripheral: CBPeripheral, didWriteValueForCharacteristic characteristic: CBCharacteristic, error: NSError?) {
-        print("LoRaWANDevice: didWriteValueForCharacteristic \(characteristic.UUID), error: \(error)")
+        log.add("LoRaWANDevice: didWriteValueForCharacteristic \(characteristic.UUID), error: \(error)")
         if error == nil {
             if characteristic.UUID == kCMD {
                 // command write successful
@@ -207,7 +209,11 @@ class LoRaWANDevice : NSObject, CBPeripheralDelegate {
                     let cmd = pendingCMD
                     pendingCMD = nil
                     if let cmd = cmd {
-                        delegate.loRaWANCommandSent(self, command: cmd)
+                        if (cmd & cmdMask) == cmdSend {
+                            delegate.loRaWANPacketSent(self)
+                        } else {
+                            delegate.loRaWANCommandSent(self, command: cmd)
+                        }
                     }
                 }
                 

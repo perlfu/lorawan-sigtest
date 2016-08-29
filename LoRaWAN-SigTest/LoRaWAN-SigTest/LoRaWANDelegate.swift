@@ -16,5 +16,6 @@ protocol LoRaWANDelegate {
     func loRaWANConfigUpdated(device : LoRaWANDevice) -> Void
     func loRaWANStatusUpdated(device : LoRaWANDevice) -> Void
     func loRaWANCommandSent(device : LoRaWANDevice, command : UInt8) -> Void
+    func loRaWANPacketSent(device : LoRaWANDevice) -> Void
     func loRaWANConfigWritten(device : LoRaWANDevice, uuid : String) -> Void
 }

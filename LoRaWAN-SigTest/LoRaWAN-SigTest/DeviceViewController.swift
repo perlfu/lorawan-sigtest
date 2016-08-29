@@ -1,32 +1,32 @@
 //
-//  FirstViewController.swift
+//  DeviceViewController.swift
 //  LoRaWAN-SigTest
 //
-//  Created by Carl Ritson on 26/08/2016.
+//  Created by Carl Ritson on 29/08/2016.
 //  Copyright © 2016 Carl Ritson. All rights reserved.
 //
 
 import UIKit
 
-class FirstViewController: UIViewController, LoRaWANDelegate {
-
+class DeviceViewController: UIViewController, LoRaWANDelegate {
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
     }
-
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-
+    
     @IBAction
     func button() {
         let locator = DeviceLocator.locator
         locator.delegate = self
         locator.findDevice()
     }
-
+    
     func loRaWANConnected(device : LoRaWANDevice) {
         
     }
@@ -52,6 +52,10 @@ class FirstViewController: UIViewController, LoRaWANDelegate {
     }
     
     func loRaWANCommandSent(device : LoRaWANDevice, command : UInt8) {
+        
+    }
+    
+    func loRaWANPacketSent(device : LoRaWANDevice) {
         
     }
     

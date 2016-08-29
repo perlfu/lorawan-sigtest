@@ -8,21 +8,21 @@
 
 /* Begin PBXBuildFile section */
 		862828E61D7069FE004A337E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 862828E51D7069FE004A337E /* AppDelegate.swift */; };
-		862828E81D7069FE004A337E /* FirstViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 862828E71D7069FE004A337E /* FirstViewController.swift */; };
-		862828EA1D7069FE004A337E /* SecondViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 862828E91D7069FE004A337E /* SecondViewController.swift */; };
 		862828ED1D7069FE004A337E /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 862828EB1D7069FE004A337E /* Main.storyboard */; };
 		862828EF1D7069FE004A337E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 862828EE1D7069FE004A337E /* Assets.xcassets */; };
 		862828F21D7069FE004A337E /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 862828F01D7069FE004A337E /* LaunchScreen.storyboard */; };
 		862828FA1D706A4F004A337E /* DeviceLocator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 862828F91D706A4F004A337E /* DeviceLocator.swift */; };
 		862828FC1D706D3C004A337E /* LoRaWANDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 862828FB1D706D3C004A337E /* LoRaWANDevice.swift */; };
 		862828FE1D73269C004A337E /* LoRaWANDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 862828FD1D73269C004A337E /* LoRaWANDelegate.swift */; };
+		862829001D7457A8004A337E /* DeviceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 862828FF1D7457A8004A337E /* DeviceViewController.swift */; };
+		862829021D745851004A337E /* LoRaWANLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 862829011D745851004A337E /* LoRaWANLog.swift */; };
+		862829061D745D37004A337E /* LogViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 862829051D745D37004A337E /* LogViewController.swift */; };
+		862829081D7465F6004A337E /* LogMessageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 862829071D7465F6004A337E /* LogMessageCell.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		862828E21D7069FE004A337E /* LoRaWAN-SigTest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "LoRaWAN-SigTest.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		862828E51D7069FE004A337E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		862828E71D7069FE004A337E /* FirstViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstViewController.swift; sourceTree = "<group>"; };
-		862828E91D7069FE004A337E /* SecondViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecondViewController.swift; sourceTree = "<group>"; };
 		862828EC1D7069FE004A337E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		862828EE1D7069FE004A337E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		862828F11D7069FE004A337E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -30,6 +30,10 @@
 		862828F91D706A4F004A337E /* DeviceLocator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeviceLocator.swift; sourceTree = "<group>"; };
 		862828FB1D706D3C004A337E /* LoRaWANDevice.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoRaWANDevice.swift; sourceTree = "<group>"; };
 		862828FD1D73269C004A337E /* LoRaWANDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoRaWANDelegate.swift; sourceTree = "<group>"; };
+		862828FF1D7457A8004A337E /* DeviceViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeviceViewController.swift; sourceTree = "<group>"; };
+		862829011D745851004A337E /* LoRaWANLog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoRaWANLog.swift; sourceTree = "<group>"; };
+		862829051D745D37004A337E /* LogViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogViewController.swift; sourceTree = "<group>"; };
+		862829071D7465F6004A337E /* LogMessageCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogMessageCell.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -64,11 +68,13 @@
 			children = (
 				862828E51D7069FE004A337E /* AppDelegate.swift */,
 				862828F91D706A4F004A337E /* DeviceLocator.swift */,
+				862829011D745851004A337E /* LoRaWANLog.swift */,
 				862828FB1D706D3C004A337E /* LoRaWANDevice.swift */,
 				862828FD1D73269C004A337E /* LoRaWANDelegate.swift */,
-				862828E71D7069FE004A337E /* FirstViewController.swift */,
-				862828E91D7069FE004A337E /* SecondViewController.swift */,
+				862828FF1D7457A8004A337E /* DeviceViewController.swift */,
+				862829051D745D37004A337E /* LogViewController.swift */,
 				862828EB1D7069FE004A337E /* Main.storyboard */,
+				862829071D7465F6004A337E /* LogMessageCell.swift */,
 				862828EE1D7069FE004A337E /* Assets.xcassets */,
 				862828F01D7069FE004A337E /* LaunchScreen.storyboard */,
 				862828F31D7069FE004A337E /* Info.plist */,
@@ -147,11 +153,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				862828EA1D7069FE004A337E /* SecondViewController.swift in Sources */,
+				862829001D7457A8004A337E /* DeviceViewController.swift in Sources */,
 				862828FC1D706D3C004A337E /* LoRaWANDevice.swift in Sources */,
 				862828E61D7069FE004A337E /* AppDelegate.swift in Sources */,
+				862829021D745851004A337E /* LoRaWANLog.swift in Sources */,
 				862828FA1D706A4F004A337E /* DeviceLocator.swift in Sources */,
-				862828E81D7069FE004A337E /* FirstViewController.swift in Sources */,
+				862829061D745D37004A337E /* LogViewController.swift in Sources */,
+				862829081D7465F6004A337E /* LogMessageCell.swift in Sources */,
 				862828FE1D73269C004A337E /* LoRaWANDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
