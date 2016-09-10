@@ -58,7 +58,7 @@ class LoRaWANDevice : NSObject, CBPeripheralDelegate {
         8 : "Busy",
         9 : "Network fatal error",
         10: "Not connected",
-        11: "No acknowledment",
+        11: "No acknowledgement",
         127: "Unknown status"
     ]
     

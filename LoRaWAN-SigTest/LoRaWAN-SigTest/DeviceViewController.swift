@@ -93,16 +93,32 @@ class DeviceViewController: UIViewController {
     
     func otaComplete(success : Bool) {
         gotResponse()
+        
+        var message = "Failed"
+        if let device = manager.device {
+            if success {
+                message = device.stsText[device.sts()]!
+            }
+        }
+        
+        let alert = UIAlertController(title: "OTA", message: message, preferredStyle: .Alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .Default, handler: nil))
+        self.presentViewController(alert, animated: true, completion: nil)
     }
     
     func pingSent(success : Bool) {
         gotResponse()
         
-        let message = success ? "Sent" : "Failed"
+        var message = "Failed"
+        if let device = manager.device {
+            if success {
+                message = device.stsText[device.sts()]!
+            }
+        }
+        
         let alert = UIAlertController(title: "Ping", message: message, preferredStyle: .Alert)
         alert.addAction(UIAlertAction(title: "OK", style: .Default, handler: nil))
         self.presentViewController(alert, animated: true, completion: nil)
-        
     }
     
     func updateButtons() {
