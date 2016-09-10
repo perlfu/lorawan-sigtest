@@ -7,15 +7,18 @@
 //
 
 import UIKit
+import CoreLocation
 
-class DeviceManager : LoRaWANDelegate {
+class DeviceManager : NSObject, LoRaWANDelegate, CLLocationManagerDelegate {
     static let shared = DeviceManager()
     
     let locator = DeviceLocator.shared
     let log = LoRaWANLog.shared
     
+    var lm : CLLocationManager!
     var deviceView : DeviceViewController?
     var configView : ConfigViewController?
+    var transponderView : TransponderViewController?
     var device : LoRaWANDevice?
     var lastError = "Not Connected"
     var running = false
@@ -32,9 +35,23 @@ class DeviceManager : LoRaWANDelegate {
     var pendingAppEUI : [UInt8]? = nil
     var pendingAppKey : [UInt8]? = nil
     
+    var transpond : NSTimer?
+    var location : CLLocation?
+    var geohash : String?
+    
     func activate() {
         if !running {
             self.begin()
+        }
+        setupLocationServices()
+    }
+    
+    func setupLocationServices() {
+        if lm == nil {
+            lm = CLLocationManager()
+            lm.delegate = self
+            lm.requestAlwaysAuthorization()
+            lm.startUpdatingLocation()
         }
     }
     
@@ -49,6 +66,11 @@ class DeviceManager : LoRaWANDelegate {
         if let deviceView = deviceView {
             dispatch_async(dispatch_get_main_queue(), {
                 deviceView.statusChanged()
+            })
+        }
+        if let transponderView = transponderView {
+            dispatch_async(dispatch_get_main_queue(), {
+                transponderView.statusChanged()
             })
         }
     }
@@ -88,6 +110,14 @@ class DeviceManager : LoRaWANDelegate {
         }
     }
     
+    func notifyTransponder(done : Bool, success : Bool) {
+        if let transponderView = transponderView {
+            dispatch_async(dispatch_get_main_queue(), {
+                transponderView.transponding(done, success: success)
+            })
+        }
+    }
+    
     func notifyOTA(success : Bool) {
         if pending == kOTA {
             pending = kNone
@@ -121,6 +151,7 @@ class DeviceManager : LoRaWANDelegate {
         if !locked && pending == kNone {
             if let device = device {
                 pending = kPing
+                log.add("DeviceManager: send ping")
                 device.sendPacket([0], ack: true)
                 return true
             }
@@ -148,14 +179,60 @@ class DeviceManager : LoRaWANDelegate {
         return false
     }
     
+    func doTranspond() {
+        if let device = device {
+            if let location = location {
+                let hash = GeoHash(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude).string(9)
+                let data = Array(hash.utf8)
+                geohash = hash
+                log.add("DeviceManager: send \(hash)")
+                device.sendPacket(data, ack: true)
+                notifyTransponder(false, success: true)
+            } else {
+                transpond = nil
+                notifyTransponder(true, success: false)
+            }
+        } else {
+            transpond = nil
+            notifyTransponder(true, success: false)
+        }
+    }
+    
+    func transponderTimer() {
+        if transpond == nil {
+            return
+        }
+        doTranspond()
+    }
+    
+    func startTransponder() -> Bool {
+        if transpond == nil {
+            locked = true
+            self.transpond = NSTimer.scheduledTimerWithTimeInterval(0.0, target: self, selector: #selector(DeviceManager.transponderTimer), userInfo: nil, repeats: false)
+            return true
+        }
+        return false
+    }
+    
+    func stopTransponder() -> Bool {
+        if transpond != nil {
+            transpond?.invalidate()
+            transpond = nil
+            locked = false
+            return true
+        }
+        return false
+    }
+    
     func loRaWANConnected(device : LoRaWANDevice) {
         self.device = device
     }
     
     func clearPending() {
-        self.notifySave(true, progress: 0.0)
-        self.notifyPing(false)
-        self.notifyOTA(false)
+        stopTransponder()
+        notifySave(true, progress: 0.0)
+        notifyPing(false)
+        notifyOTA(false)
     }
     
     func loRaWANDisconnected(device : LoRaWANDevice) {
@@ -215,6 +292,12 @@ class DeviceManager : LoRaWANDelegate {
     }
     
     func loRaWANPacketSent(device : LoRaWANDevice) {
+        if transpond != nil {
+            dispatch_async(dispatch_get_main_queue(), {
+                self.transpond = NSTimer.scheduledTimerWithTimeInterval(30.0, target: self, selector: #selector(DeviceManager.transponderTimer), userInfo: nil, repeats: false)
+            })
+            notifyTransponder(true, success: true)
+        }
     }
     
     func loRaWANConfigWritten(device : LoRaWANDevice, uuid : String) {
@@ -232,5 +315,14 @@ class DeviceManager : LoRaWANDelegate {
                 device.sendSave()
             }
         }
+    }
+    
+    func locationManager(manager: CLLocationManager, didChangeAuthorizationStatus status: CLAuthorizationStatus) {
+        //print("didChangeAuthorizationStatus \(status)")
+    }
+    
+    func locationManager(manager: CLLocationManager, didUpdateToLocation newLocation: CLLocation, fromLocation oldLocation: CLLocation) {
+        //print("didUpdateToLocation")
+        location = newLocation
     }
 }
