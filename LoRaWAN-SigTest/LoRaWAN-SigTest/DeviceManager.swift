@@ -26,6 +26,7 @@ class DeviceManager : LoRaWANDelegate {
     let kOTA = 3
     
     var lastCMD : UInt8 = 0
+    var locked = false
     var pending = 0
     var pendingDevEUI : [UInt8]? = nil
     var pendingAppEUI : [UInt8]? = nil
@@ -99,7 +100,7 @@ class DeviceManager : LoRaWANDelegate {
     }
     
     func performOTA() -> Bool {
-        if pending == kNone {
+        if !locked && pending == kNone {
             if let device = device {
                 pending = kOTA
                 device.sendOTA()
@@ -117,7 +118,7 @@ class DeviceManager : LoRaWANDelegate {
     }
     
     func sendPing() -> Bool {
-        if pending == kNone {
+        if !locked && pending == kNone {
             if let device = device {
                 pending = kPing
                 device.sendPacket([0], ack: true)
@@ -134,7 +135,7 @@ class DeviceManager : LoRaWANDelegate {
     }
     
     func saveConfig(devEUI : [UInt8], appEUI : [UInt8], appKey : [UInt8]) -> Bool {
-        if pending == kNone {
+        if !locked && pending == kNone {
             if let device = device {
                 pending = kSave
                 pendingDevEUI = devEUI

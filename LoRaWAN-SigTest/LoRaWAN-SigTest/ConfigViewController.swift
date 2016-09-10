@@ -67,9 +67,7 @@ class ConfigViewController: UIViewController, UITextFieldDelegate {
             if progress != 1.0 {
                 message = "Failed"
             }
-            let alert = UIAlertController(title: "Store to Device", message: message, preferredStyle: .Alert)
-            alert.addAction(UIAlertAction(title: "OK", style: .Default, handler: nil))
-            self.presentViewController(alert, animated: true, completion: nil)
+            showAlert("Store to Device", message: message)
             self.storeButton.enabled = true
         } else {
             self.progressBar.progress = progress
@@ -164,13 +162,24 @@ class ConfigViewController: UIViewController, UITextFieldDelegate {
         return true
     }
     
+    func showAlert(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .Alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .Default, handler: nil))
+        self.presentViewController(alert, animated: true, completion: nil)
+    }
+    
     @IBAction
     func store() {
         self.activityIndicator.startAnimating()
         self.progressBar.hidden = false
         self.progressBar.progress = 0.0
-        manager.saveConfig(dataFromHex(self.devEUI.text!, length: 8),
+        let ok = manager.saveConfig(dataFromHex(self.devEUI.text!, length: 8),
                            appEUI: dataFromHex(self.appEUI.text!, length: 8),
                            appKey: dataFromHex(self.appKey.text!, length: 16))
+        if !ok {
+            showAlert("Store to Device", message: "Failed - device busy")
+            self.activityIndicator.stopAnimating()
+            self.progressBar.hidden = true
+        }
     }
 }

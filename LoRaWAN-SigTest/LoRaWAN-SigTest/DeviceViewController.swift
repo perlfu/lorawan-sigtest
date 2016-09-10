@@ -91,6 +91,12 @@ class DeviceViewController: UIViewController {
         updateButtons()
     }
     
+    func showAlert(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .Alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .Default, handler: nil))
+        self.presentViewController(alert, animated: true, completion: nil)
+    }
+    
     func otaComplete(success : Bool) {
         gotResponse()
         
@@ -100,10 +106,7 @@ class DeviceViewController: UIViewController {
                 message = device.stsText[device.sts()]!
             }
         }
-        
-        let alert = UIAlertController(title: "OTA", message: message, preferredStyle: .Alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .Default, handler: nil))
-        self.presentViewController(alert, animated: true, completion: nil)
+        showAlert("OTA", message: message)
     }
     
     func pingSent(success : Bool) {
@@ -116,16 +119,14 @@ class DeviceViewController: UIViewController {
             }
         }
         
-        let alert = UIAlertController(title: "Ping", message: message, preferredStyle: .Alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .Default, handler: nil))
-        self.presentViewController(alert, animated: true, completion: nil)
+        showAlert("Ping", message: message)
     }
     
     func updateButtons() {
         if let device = manager.device {
             resetButton.enabled = true
-            otaButton.enabled = !awaitingResponse
-            pingButton.enabled = !awaitingResponse && (device.con() == 1)
+            otaButton.enabled = !awaitingResponse && !manager.locked
+            pingButton.enabled = !awaitingResponse && !manager.locked && (device.con() == 1)
         } else {
             otaButton.enabled = false
             resetButton.enabled = false
@@ -175,7 +176,7 @@ class DeviceViewController: UIViewController {
             activityIndicator.startAnimating()
             updateButtons()
         } else {
-            
+            showAlert("OTA", message: "Not possible - device busy")
         }
     }
     
@@ -191,7 +192,7 @@ class DeviceViewController: UIViewController {
             activityIndicator.startAnimating()
             updateButtons()
         } else {
-            
+            showAlert("Ping", message: "Not possible - device busy")
         }
     }
 }
