@@ -396,9 +396,9 @@ void loop() {
     debugSerial.println(sts);
     gatt.setChar(_sts_id, sts);
 
-    delay(100);
-  } else {
     delay(500);
+  } else {
+    delay(100);
   }
 }
 
@@ -416,6 +416,7 @@ void updateSNR() {
   } else {
     gatt.setChar(_snr_id, (uint8_t *)"unk", 3);
   }
+  delay(100);
 }
 
 bool queryLoRaBee(char *cmd, uint8_t* buffer, uint16_t size) {
