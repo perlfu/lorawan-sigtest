@@ -20,9 +20,13 @@ class DeviceManager : LoRaWANDelegate {
     var lastError = "Not Connected"
     var running = false
     
-    var pendingPing = false
+    let kNone = 0
+    let kPing = 1
+    let kSave = 2
+    let kOTA = 3
     
-    var pendingSave = false
+    var lastCMD : UInt8 = 0
+    var pending = 0
     var pendingDevEUI : [UInt8]? = nil
     var pendingAppEUI : [UInt8]? = nil
     var pendingAppKey : [UInt8]? = nil
@@ -35,6 +39,7 @@ class DeviceManager : LoRaWANDelegate {
     
     func begin() {
         running = true
+        pending = kNone
         locator.delegate = self
         locator.findDevice()
     }
@@ -56,80 +61,109 @@ class DeviceManager : LoRaWANDelegate {
     }
     
     func notifySave(complete : Bool, progress : Float) {
-        if complete {
-            pendingSave = false
-            pendingDevEUI = nil
-            pendingAppEUI = nil
-            pendingAppKey = nil
-        }
-        if let configView = configView {
-            dispatch_async(dispatch_get_main_queue(), {
-                configView.configSaved(complete, progress: progress)
-            })
-        }
-    }
-    
-    func notifyPing() {
-        pendingPing = false
-        if let deviceView = deviceView {
-            dispatch_async(dispatch_get_main_queue(), {
-                deviceView.pingSent()
-            })
+        if pending == kSave {
+            if complete {
+                pending = kNone
+                pendingDevEUI = nil
+                pendingAppEUI = nil
+                pendingAppKey = nil
+            }
+            if let configView = configView {
+                dispatch_async(dispatch_get_main_queue(), {
+                    configView.configSaved(complete, progress: progress)
+                })
+            }
         }
     }
     
-    func performOTA() {
-        if let device = device {
-            device.sendOTA()
+    func notifyPing(success : Bool) {
+        if pending == kPing {
+            pending = kNone
+            if let deviceView = deviceView {
+                dispatch_async(dispatch_get_main_queue(), {
+                    deviceView.pingSent(success)
+                })
+            }
         }
+    }
+    
+    func notifyOTA(success : Bool) {
+        if pending == kOTA {
+            pending = kNone
+            if let deviceView = deviceView {
+                dispatch_async(dispatch_get_main_queue(), {
+                    deviceView.otaComplete(success)
+                })
+            }
+        }
+    }
+    
+    func performOTA() -> Bool {
+        if pending == kNone {
+            if let device = device {
+                pending = kOTA
+                device.sendOTA()
+                return true
+            }
+        }
+        return false
     }
     
     func resetRN2483() {
         if let device = device {
+            clearPending()
             device.sendReset()
         }
     }
     
-    func sendPing() {
-        if let device = device {
-            pendingPing = true
-            device.sendPacket([0], ack: true)
+    func sendPing() -> Bool {
+        if pending == kNone {
+            if let device = device {
+                pending = kPing
+                device.sendPacket([0], ack: true)
+                return true
+            }
         }
+        return false
     }
     
     func requestStatusUpdate() {
         if let device = device {
             device.queryRSSI()
-            //device.queryStatus()
         }
     }
     
-    func saveConfig(devEUI : [UInt8], appEUI : [UInt8], appKey : [UInt8]) {
-        if !pendingSave {
+    func saveConfig(devEUI : [UInt8], appEUI : [UInt8], appKey : [UInt8]) -> Bool {
+        if pending == kNone {
             if let device = device {
+                pending = kSave
                 pendingDevEUI = devEUI
                 pendingAppEUI = appEUI
                 pendingAppKey = appKey
-                pendingSave = true
                 device.setDevEUI(devEUI)
-            } else {
-                notifySave(true, progress: 0.0)
+                return true
             }
         }
+        return false
     }
     
     func loRaWANConnected(device : LoRaWANDevice) {
         self.device = device
     }
     
+    func clearPending() {
+        self.notifySave(true, progress: 0.0)
+        self.notifyPing(false)
+        self.notifyOTA(false)
+    }
+    
     func loRaWANDisconnected(device : LoRaWANDevice) {
         if device == self.device {
             self.device = nil
-            self.notifyStatus()
-            if pendingSave {
-                self.notifySave(true, progress: 0.0)
-            }
-            self.notifyConfig()
+            
+            clearPending()
+            notifyStatus()
+            notifyConfig()
             
             dispatch_async(dispatch_get_main_queue(), {
                 // restart
@@ -139,7 +173,7 @@ class DeviceManager : LoRaWANDelegate {
     }
     
     func loRaWANReady(device : LoRaWANDevice) {
-        //device.setAppEUI([0x70, 0xB3, 0xD5, 0x7E, 0xD0, 0x00, 0x07, 0x99])
+        
     }
     
     func loRAWANLocationError(message : String) {
@@ -149,38 +183,41 @@ class DeviceManager : LoRaWANDelegate {
     }
     
     func loRaWANError(device : LoRaWANDevice, message : String) {
-        if pendingSave {
-            notifySave(true, progress: 0.0)
-        }
-        if pendingPing {
-            pendingPing = false
-        }
+        log.add("DeviceManager: error; \(message)")
+        clearPending()
     }
     
     func loRaWANConfigUpdated(device : LoRaWANDevice) {
         notifyConfig()
     }
     
-    func loRaWANStatusUpdated(device : LoRaWANDevice) {
+    func loRaWANStatusUpdated(device : LoRaWANDevice, sts: Bool) {
+        if sts && pending != kNone {
+            // command notification
+            if pending == kSave {
+                if device.sts() == device.stsNoError {
+                    notifySave(true, progress: 1.0)
+                } else {
+                    notifySave(true, progress: 0.0)
+                }
+            } else if pending == kPing {
+                notifyPing(true)
+            } else if pending == kOTA {
+                notifyOTA(true)
+            }
+        }
         notifyStatus()
     }
     
     func loRaWANCommandSent(device : LoRaWANDevice, command : UInt8) {
-        if command == device.cmdSave {
-            if pendingSave {
-                notifySave(true, progress: 1.0)
-            }
-        }
+        lastCMD = command
     }
     
     func loRaWANPacketSent(device : LoRaWANDevice) {
-        if pendingPing {
-            notifyPing()
-        }
     }
     
     func loRaWANConfigWritten(device : LoRaWANDevice, uuid : String) {
-        if pendingSave {
+        if pending == kSave {
             if uuid == device.kDevEUI.UUIDString {
                 notifySave(false, progress: 0.25)
                 device.setAppEUI(pendingAppEUI!)

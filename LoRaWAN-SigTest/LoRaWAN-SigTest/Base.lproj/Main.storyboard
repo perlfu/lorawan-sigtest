@@ -79,15 +79,18 @@
                                 <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="No SNR" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="YLo-qx-LUV">
+                                <rect key="frame" x="108" y="131" width="472" height="19.5"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="16"/>
+                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Date time" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mIi-Lr-Skq">
                                 <rect key="frame" x="20" y="28" width="560" height="14.5"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="12"/>
                                 <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="Ssj-LW-JMg">
-                                <rect key="frame" x="20" y="26" width="20" height="20"/>
-                            </activityIndicatorView>
                             <button opaque="NO" contentMode="scaleToFill" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hCn-0g-AAY">
                                 <rect key="frame" x="250.5" y="494" width="100" height="39"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="22"/>
@@ -96,12 +99,9 @@
                                     <action selector="sendPing" destination="9pv-A4-QxB" eventType="touchUpInside" id="pYN-ow-kpK"/>
                                 </connections>
                             </button>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="No SNR" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="YLo-qx-LUV">
-                                <rect key="frame" x="108" y="131" width="472" height="19.5"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="16"/>
-                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
-                                <nil key="highlightedColor"/>
-                            </label>
+                            <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="Ssj-LW-JMg">
+                                <rect key="frame" x="290" y="416" width="20" height="20"/>
+                            </activityIndicatorView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                         <constraints>
@@ -113,9 +113,7 @@
                             <constraint firstItem="YLo-qx-LUV" firstAttribute="width" secondItem="VRP-NB-KhZ" secondAttribute="width" id="BnN-Qt-BLH"/>
                             <constraint firstItem="4ug-Mw-9AY" firstAttribute="top" secondItem="hCn-0g-AAY" secondAttribute="bottom" constant="18" id="Bzc-NN-ENC"/>
                             <constraint firstItem="729-Ye-wkW" firstAttribute="centerY" secondItem="YQi-iQ-s9D" secondAttribute="centerY" id="Egs-Wz-jSB"/>
-                            <constraint firstItem="Ssj-LW-JMg" firstAttribute="centerY" secondItem="mIi-Lr-Skq" secondAttribute="centerY" id="FXc-Bg-6YD"/>
                             <constraint firstItem="mIi-Lr-Skq" firstAttribute="top" secondItem="Ia1-K6-d13" secondAttribute="bottom" constant="8" id="GGY-mE-MKp"/>
-                            <constraint firstItem="Ssj-LW-JMg" firstAttribute="leading" secondItem="tsR-hK-woN" secondAttribute="leadingMargin" id="Ioi-Ho-C8s"/>
                             <constraint firstItem="J0r-Av-u19" firstAttribute="trailing" secondItem="tsR-hK-woN" secondAttribute="trailingMargin" id="RsR-6h-OcL"/>
                             <constraint firstItem="4ug-Mw-9AY" firstAttribute="top" secondItem="J0r-Av-u19" secondAttribute="bottom" constant="64" id="TmP-4R-lcR"/>
                             <constraint firstItem="YLo-qx-LUV" firstAttribute="trailing" secondItem="tsR-hK-woN" secondAttribute="trailingMargin" id="ah6-JD-aaD"/>
@@ -125,6 +123,7 @@
                             <constraint firstItem="mIi-Lr-Skq" firstAttribute="leading" secondItem="tsR-hK-woN" secondAttribute="leadingMargin" id="e4G-bc-uWG"/>
                             <constraint firstItem="J0r-Av-u19" firstAttribute="centerY" secondItem="yAb-Z1-VOE" secondAttribute="centerY" id="fQQ-n1-idv"/>
                             <constraint firstItem="bPs-1H-x2a" firstAttribute="trailing" secondItem="tsR-hK-woN" secondAttribute="trailingMargin" id="heS-EK-sS0"/>
+                            <constraint firstItem="Ssj-LW-JMg" firstAttribute="centerX" secondItem="tsR-hK-woN" secondAttribute="centerX" id="kQ4-KO-m3K"/>
                             <constraint firstItem="VRP-NB-KhZ" firstAttribute="centerY" secondItem="34i-cU-6FZ" secondAttribute="centerY" id="nhU-xS-HUk"/>
                             <constraint firstItem="34i-cU-6FZ" firstAttribute="top" secondItem="beW-IB-foM" secondAttribute="bottom" constant="8" id="pfg-v7-qfK"/>
                             <constraint firstItem="34i-cU-6FZ" firstAttribute="leading" secondItem="beW-IB-foM" secondAttribute="leading" id="q7L-dz-v0O"/>
@@ -136,6 +135,7 @@
                             <constraint firstItem="bPs-1H-x2a" firstAttribute="centerY" secondItem="beW-IB-foM" secondAttribute="centerY" id="wfe-uI-o8J"/>
                             <constraint firstItem="beW-IB-foM" firstAttribute="top" secondItem="YQi-iQ-s9D" secondAttribute="bottom" constant="8" id="xj2-mJ-FkP"/>
                             <constraint firstItem="VRP-NB-KhZ" firstAttribute="trailing" secondItem="tsR-hK-woN" secondAttribute="trailingMargin" id="ywb-IT-m2i"/>
+                            <constraint firstItem="hCn-0g-AAY" firstAttribute="top" secondItem="Ssj-LW-JMg" secondAttribute="bottom" constant="58" id="yze-CU-v0P"/>
                         </constraints>
                     </view>
                     <tabBarItem key="tabBarItem" title="Device" image="first" id="acW-dT-cKf"/>

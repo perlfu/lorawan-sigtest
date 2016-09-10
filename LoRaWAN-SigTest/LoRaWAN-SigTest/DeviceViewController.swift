@@ -40,7 +40,7 @@ class DeviceViewController: UIViewController {
     var snrLabel : UILabel!
     
     var updateTimer : NSTimer?
-    var pendingUpdate = false
+    var awaitingResponse = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -58,12 +58,12 @@ class DeviceViewController: UIViewController {
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
         updateStatus()
-        manager.requestStatusUpdate()
+        updateButtons()
     }
     
     override func viewDidAppear(animated: Bool) {
         super.viewDidAppear(animated)
-        pendingUpdate = false
+        awaitingResponse = false
         if updateTimer == nil {
             updateTimer = NSTimer.scheduledTimerWithTimeInterval(5.0, target: self, selector: #selector(DeviceViewController.timedUpdate), userInfo: nil, repeats: true)
         }
@@ -76,24 +76,45 @@ class DeviceViewController: UIViewController {
     }
     
     func timedUpdate() {
-        if !pendingUpdate {
-            self.activityIndicator.stopAnimating()
-            pendingUpdate = true
-            manager.requestStatusUpdate()
-        }
+        manager.requestStatusUpdate()
     }
     
     // assumes we are running on the main queue
     func statusChanged() {
-        pendingUpdate = false
-        self.activityIndicator.stopAnimating()
-        self.updateStatus()
+        updateStatus()
+        updateButtons()
     }
     
-    func pingSent() {
-        let alert = UIAlertController(title: "Ping", message: "Sent", preferredStyle: .Alert)
+    func gotResponse() {
+        awaitingResponse = false
+        activityIndicator.stopAnimating()
+        updateButtons()
+    }
+    
+    func otaComplete(success : Bool) {
+        gotResponse()
+    }
+    
+    func pingSent(success : Bool) {
+        gotResponse()
+        
+        let message = success ? "Sent" : "Failed"
+        let alert = UIAlertController(title: "Ping", message: message, preferredStyle: .Alert)
         alert.addAction(UIAlertAction(title: "OK", style: .Default, handler: nil))
         self.presentViewController(alert, animated: true, completion: nil)
+        
+    }
+    
+    func updateButtons() {
+        if let device = manager.device {
+            resetButton.enabled = true
+            otaButton.enabled = !awaitingResponse
+            pingButton.enabled = !awaitingResponse && (device.con() == 1)
+        } else {
+            otaButton.enabled = false
+            resetButton.enabled = false
+            pingButton.enabled = false
+        }
     }
     
     func updateStatus() {
@@ -111,21 +132,14 @@ class DeviceViewController: UIViewController {
                 eui = "Unknown"
             }
             deviceLabel.text = "\(eui) @ \(device.rssi)"
-            otaButton.enabled = true
-            resetButton.enabled = true
             if device.con() == 1 {
-                loraLabel.text = "Connected to LoRaWAN"
-                pingButton.enabled = true
+                loraLabel.text = "Connected"
             } else {
                 loraLabel.text = "Not connected"
-                pingButton.enabled = false
             }
             loraStatusLabel.text = device.stsText[device.sts()]
-            snrLabel.text = "SNR: \(device.snr())"
+            snrLabel.text = "Last SNR: \(device.snr())"
         } else {
-            otaButton.enabled = false
-            resetButton.enabled = false
-            pingButton.enabled = false
             loraLabel.text = "No device"
             loraStatusLabel.text = ""
             snrLabel.text = ""
@@ -140,7 +154,13 @@ class DeviceViewController: UIViewController {
     
     @IBAction
     func performOTA() {
-        manager.performOTA()
+        if manager.performOTA() {
+            awaitingResponse = true
+            activityIndicator.startAnimating()
+            updateButtons()
+        } else {
+            
+        }
     }
     
     @IBAction
@@ -150,7 +170,13 @@ class DeviceViewController: UIViewController {
     
     @IBAction
     func sendPing() {
-        manager.sendPing()
+        if manager.sendPing() {
+            awaitingResponse = true
+            activityIndicator.startAnimating()
+            updateButtons()
+        } else {
+            
+        }
     }
 }
 

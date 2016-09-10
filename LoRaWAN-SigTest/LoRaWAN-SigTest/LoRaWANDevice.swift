@@ -176,7 +176,8 @@ class LoRaWANDevice : NSObject, CBPeripheralDelegate {
         
         if ready {
             self.configureDevice()
-            self.queryStatus()
+            devicePeripheral.readValueForCharacteristic(cSTS)
+            //self.queryStatus(true)
             self.queryConfig()
         }
         
@@ -196,6 +197,9 @@ class LoRaWANDevice : NSObject, CBPeripheralDelegate {
     func peripheral(peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: NSError?) {
         log.add("LoRaWANDevice: rssi \(RSSI)")
         rssi = RSSI
+        if let delegate = delegate {
+            delegate.loRaWANStatusUpdated(self, sts: false)
+        }
     }
 
     func peripheral(peripheral: CBPeripheral, didUpdateValueForCharacteristic characteristic: CBCharacteristic, error: NSError?) {
@@ -204,9 +208,14 @@ class LoRaWANDevice : NSObject, CBPeripheralDelegate {
             log.add("LoRaWANDevice: update data = \(value)")
             state[characteristic.UUID.UUIDString] = value
             
+            if characteristic.UUID == kSTS {
+                // this is a notification from device; follow up with reads on other fields
+                queryStatus(false)
+            }
+            
             if let delegate = delegate {
                 if statusVar[characteristic.UUID.UUIDString] != nil {
-                    delegate.loRaWANStatusUpdated(self)
+                    delegate.loRaWANStatusUpdated(self, sts: characteristic.UUID == kSTS)
                 }
                 if configVar[characteristic.UUID.UUIDString] != nil {
                     delegate.loRaWANConfigUpdated(self)
@@ -259,22 +268,20 @@ class LoRaWANDevice : NSObject, CBPeripheralDelegate {
     }
     
     func configureDevice() {
-        if self.ready() {
-            devicePeripheral.setNotifyValue(true, forCharacteristic: cCON)
-            devicePeripheral.setNotifyValue(true, forCharacteristic: cSTS)
-            devicePeripheral.setNotifyValue(true, forCharacteristic: cSNR)
-        }
+        devicePeripheral.setNotifyValue(true, forCharacteristic: cSTS)
     }
     
     func queryRSSI() {
         devicePeripheral.readRSSI()
     }
     
-    func queryStatus() {
+    func queryStatus(withSTS: Bool) {
         if self.ready() {
             devicePeripheral.readRSSI()
+            if withSTS {
+                devicePeripheral.readValueForCharacteristic(cSTS)
+            }
             devicePeripheral.readValueForCharacteristic(cCON)
-            devicePeripheral.readValueForCharacteristic(cSTS)
             devicePeripheral.readValueForCharacteristic(cSNR)
         }
     }
