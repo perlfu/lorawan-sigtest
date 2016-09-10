@@ -46,6 +46,21 @@ class LoRaWANDevice : NSObject, CBPeripheralDelegate {
     let stsNotConnected      : UInt8 = 10
     let stsNoAcknowledgment  : UInt8 = 11
     let stsUnknown           : UInt8 = 127
+    let stsText : [UInt8: String] = [
+        0 : "No status",
+        1 : "OTA success",
+        2 : "OTA failed",
+        3 : "No error",
+        4 : "No response",
+        5 : "Timeout",
+        6 : "Payload size error",
+        7 : "Internal error",
+        8 : "Busy",
+        9 : "Network fatal error",
+        10: "Not connected",
+        11: "No acknowledment",
+        127: "Unknown status"
+    ]
     
     let log = LoRaWANLog.shared
     
@@ -226,6 +241,9 @@ class LoRaWANDevice : NSObject, CBPeripheralDelegate {
             } else {
                 // config update successful
                 if let delegate = delegate {
+                    if let value = characteristic.value {
+                        state[characteristic.UUID.UUIDString] = value
+                    }
                     delegate.loRaWANConfigWritten(self, uuid: characteristic.UUID.UUIDString)
                 }
             }
@@ -241,28 +259,35 @@ class LoRaWANDevice : NSObject, CBPeripheralDelegate {
     }
     
     func configureDevice() {
-        assert(self.ready())
-        devicePeripheral.setNotifyValue(true, forCharacteristic: cCON)
-        devicePeripheral.setNotifyValue(true, forCharacteristic: cSTS)
-        devicePeripheral.setNotifyValue(true, forCharacteristic: cSNR)
+        if self.ready() {
+            devicePeripheral.setNotifyValue(true, forCharacteristic: cCON)
+            devicePeripheral.setNotifyValue(true, forCharacteristic: cSTS)
+            devicePeripheral.setNotifyValue(true, forCharacteristic: cSNR)
+        }
+    }
+    
+    func queryRSSI() {
+        devicePeripheral.readRSSI()
     }
     
     func queryStatus() {
-        assert(self.ready())
-        devicePeripheral.readRSSI()
-        devicePeripheral.readValueForCharacteristic(cCON)
-        devicePeripheral.readValueForCharacteristic(cSTS)
-        devicePeripheral.readValueForCharacteristic(cSNR)
+        if self.ready() {
+            devicePeripheral.readRSSI()
+            devicePeripheral.readValueForCharacteristic(cCON)
+            devicePeripheral.readValueForCharacteristic(cSTS)
+            devicePeripheral.readValueForCharacteristic(cSNR)
+        }
     }
     
     func queryConfig() {
-        assert(self.ready())
-        devicePeripheral.readValueForCharacteristic(cHWEUI)
-        devicePeripheral.readValueForCharacteristic(cDevEUI)
-        devicePeripheral.readValueForCharacteristic(cAppEUI)
-        devicePeripheral.readValueForCharacteristic(cAppKey)
-        devicePeripheral.readValueForCharacteristic(cPort)
-        devicePeripheral.readValueForCharacteristic(cRetries)
+        if self.ready() {
+            devicePeripheral.readValueForCharacteristic(cHWEUI)
+            devicePeripheral.readValueForCharacteristic(cDevEUI)
+            devicePeripheral.readValueForCharacteristic(cAppEUI)
+            devicePeripheral.readValueForCharacteristic(cAppKey)
+            devicePeripheral.readValueForCharacteristic(cPort)
+            devicePeripheral.readValueForCharacteristic(cRetries)
+        }
     }
     
     func readNbyte(key: String, length: Int) -> [UInt8]? {
@@ -361,6 +386,7 @@ class LoRaWANDevice : NSObject, CBPeripheralDelegate {
     func snr() -> Int8 {
         if let value = state[kSNR.UUIDString] {
             if let str = NSString(data: value, encoding: NSASCIIStringEncoding) {
+                //print("raw snr: \(str)")
                 return Int8(truncatingBitPattern: str.intValue)
             }
         }

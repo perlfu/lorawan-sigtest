@@ -12,6 +12,7 @@ protocol LoRaWANDelegate {
     func loRaWANConnected(device : LoRaWANDevice) -> Void
     func loRaWANDisconnected(device : LoRaWANDevice) -> Void
     func loRaWANReady(device : LoRaWANDevice) -> Void
+    func loRAWANLocationError(message : String) -> Void
     func loRaWANError(device : LoRaWANDevice, message : String) -> Void
     func loRaWANConfigUpdated(device : LoRaWANDevice) -> Void
     func loRaWANStatusUpdated(device : LoRaWANDevice) -> Void

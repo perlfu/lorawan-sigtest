@@ -10,7 +10,7 @@ import UIKit
 import CoreBluetooth
 
 class DeviceLocator: NSObject, CBCentralManagerDelegate {
-    static let locator = DeviceLocator()
+    static let shared = DeviceLocator()
     
     let kServiceUUID = CBUUID(string: "3A76BBF7-351A-4276-B4D6-C30F16944084")
     
@@ -19,11 +19,15 @@ class DeviceLocator: NSObject, CBCentralManagerDelegate {
     var queue : dispatch_queue_t!
     var devicePeripheral : CBPeripheral?
     var device : LoRaWANDevice?
-    var searching = false
+    var _searching = false
     var delegate : LoRaWANDelegate?
     
+    func searching() -> Bool {
+        return (_searching && manager.state == .PoweredOn)
+    }
+    
     func findDevice() {
-        searching = true
+        _searching = true
         
         if manager == nil {
             log.add("DeviceLocator: setup central")
@@ -50,7 +54,7 @@ class DeviceLocator: NSObject, CBCentralManagerDelegate {
             log.add("DeviceLocator: ending search")
             devicePeripheral = peripheral
             manager.stopScan()
-            searching = false
+            _searching = false
             manager.connectPeripheral(peripheral, options: nil)
         }
     }
@@ -68,12 +72,27 @@ class DeviceLocator: NSObject, CBCentralManagerDelegate {
     
     func centralManager(central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: NSError?) {
         log.add("DeviceLocator: disconnect \(peripheral)")
+        if peripheral == devicePeripheral {
+            if let device = device {
+                device.disconnect()
+            }
+            device = nil
+            devicePeripheral = nil
+        }
     }
-    
+
     func centralManagerDidUpdateState(central: CBCentralManager) {
-        if searching {
+        if _searching {
             if central.state == .PoweredOn {
-                manager.scanForPeripheralsWithServices([kServiceUUID], options: nil)
+                central.scanForPeripheralsWithServices([kServiceUUID], options: nil)
+            } else if let delegate = delegate {
+                if central.state == .PoweredOff {
+                    delegate.loRAWANLocationError("Bluetooth turned off")
+                } else if central.state == .Unsupported {
+                    delegate.loRAWANLocationError("Bluetooth not supported")
+                } else if central.state == .Unauthorized {
+                    delegate.loRAWANLocationError("Bluetooth access not permitted")
+                }
             }
         }
         log.add("DeviceLocator: state update \(central.state.rawValue)")
