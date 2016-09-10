@@ -129,7 +129,7 @@ void initBLE() {
 
   /* Print Bluefruit information */
   ble.info();
-  //ble.verbose(false);
+  ble.verbose(false);
 
   /* Wait for connection */
   //while (!ble.isConnected()) {
@@ -161,6 +161,14 @@ void initBLE() {
   _sts_id = gatt.addCharacteristic(LoRaWAN_STS, GATT_CHARS_PROPERTIES_READ | GATT_CHARS_PROPERTIES_NOTIFY, 1, 1, BLE_DATATYPE_INTEGER);
   _snr_id = gatt.addCharacteristic(LoRaWAN_SNR, GATT_CHARS_PROPERTIES_READ | GATT_CHARS_PROPERTIES_NOTIFY, 1, 4, BLE_DATATYPE_BYTEARRAY);
 
+  // set attribute values (pre-reset)
+  gatt.setChar(_hwEUI_id, hwEUI, sizeof(hwEUI));
+  gatt.setChar(_devEUI_id, devEUI, sizeof(devEUI));
+  gatt.setChar(_appEUI_id, appEUI, sizeof(appEUI));
+  gatt.setChar(_appKey_id, appKey, sizeof(appKey));
+  gatt.setChar(_port_id, RN2483_port);
+  gatt.setChar(_retries_id, RN2483_retries);
+
   uint8_t advdata[25]; // 3 + 4 + 18
   int p = 0;
   // General discoverability of BLE device
@@ -183,7 +191,7 @@ void initBLE() {
   ble.waitForOK();
   delay(1000);
 
-  // set attribute values
+  // set attribute values (post-reset)
   gatt.setChar(_hwEUI_id, hwEUI, sizeof(hwEUI));
   gatt.setChar(_devEUI_id, devEUI, sizeof(devEUI));
   gatt.setChar(_appEUI_id, appEUI, sizeof(appEUI));
@@ -319,6 +327,7 @@ void loop() {
         RN2483_connected = 0;
         sts = LoRaWAN_STS_OTAFailed;
       }
+      updateSNR();
       gatt.setChar(_con_id, RN2483_connected);
     } else if (cmd == LoRaWAN_CMD_Reset) {
       resetLoRa();
@@ -375,29 +384,37 @@ void loop() {
         }
 
         // update snr
-        if ((cmd & LoRaWAN_CMD_SendEmpty) == LoRaWAN_CMD_SendEmpty) {
-          uint8_t buf[8];
-          bool ok = queryLoRaBee("radio get snr", buf, sizeof(buf));
-          if (ok) {
-            int snrlen = strlen((char *)buf);
-            if (snrlen > 4) {
-              snrlen = 4;
-            }
-            gatt.setChar(LoRaWAN_SNR, buf, snrlen);
-          } else {
-            gatt.setChar(LoRaWAN_SNR, (uint8_t *)"unk", 3);
-          }
+        if ((cmd & LoRaWAN_CMD_SendAck) == LoRaWAN_CMD_SendAck) {
+          updateSNR();
         }
       } else {
         sts = LoRaWAN_STS_NotConnected;
       }
     }
-    
+
+    debugSerial.print("sts: ");
+    debugSerial.println(sts);
     gatt.setChar(_sts_id, sts);
 
     delay(100);
   } else {
     delay(500);
+  }
+}
+
+void updateSNR() {
+  uint8_t buf[8];
+  bool ok = queryLoRaBee("radio get snr", buf, sizeof(buf));
+  if (ok) {
+    int snrlen = strlen((char *)buf);
+    if (snrlen > 4) {
+      snrlen = 4;
+    }
+    debugSerial.print("snr: ");
+    debugSerial.println((char *)buf);
+    gatt.setChar(_snr_id, buf, snrlen);
+  } else {
+    gatt.setChar(_snr_id, (uint8_t *)"unk", 3);
   }
 }
 
