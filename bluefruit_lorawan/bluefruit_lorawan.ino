@@ -153,12 +153,12 @@ void initBLE() {
   _devEUI_id = gatt.addCharacteristic(LoRaWAN_DEV_EUI, GATT_CHARS_PROPERTIES_READ | GATT_CHARS_PROPERTIES_WRITE, sizeof(devEUI), sizeof(devEUI), BLE_DATATYPE_BYTEARRAY);
   _appEUI_id = gatt.addCharacteristic(LoRaWAN_APP_EUI, GATT_CHARS_PROPERTIES_READ | GATT_CHARS_PROPERTIES_WRITE, sizeof(appEUI), sizeof(appEUI), BLE_DATATYPE_BYTEARRAY);
   _appKey_id = gatt.addCharacteristic(LoRaWAN_APP_KEY, GATT_CHARS_PROPERTIES_READ | GATT_CHARS_PROPERTIES_WRITE, sizeof(appKey), sizeof(appKey), BLE_DATATYPE_BYTEARRAY);
-  _port_id = gatt.addCharacteristic(LoRaWAN_PORT, GATT_CHARS_PROPERTIES_READ | GATT_CHARS_PROPERTIES_WRITE, 1, 1, BLE_DATATYPE_INTEGER);
-  _retries_id = gatt.addCharacteristic(LoRaWAN_RETRIES, GATT_CHARS_PROPERTIES_READ | GATT_CHARS_PROPERTIES_WRITE, 1, 1, BLE_DATATYPE_INTEGER);
-  _cmd_id = gatt.addCharacteristic(LoRaWAN_CMD, GATT_CHARS_PROPERTIES_WRITE, 1, 1, BLE_DATATYPE_INTEGER);
+  _port_id = gatt.addCharacteristic(LoRaWAN_PORT, GATT_CHARS_PROPERTIES_READ | GATT_CHARS_PROPERTIES_WRITE, 1, 1, BLE_DATATYPE_BYTEARRAY);
+  _retries_id = gatt.addCharacteristic(LoRaWAN_RETRIES, GATT_CHARS_PROPERTIES_READ | GATT_CHARS_PROPERTIES_WRITE, 1, 1, BLE_DATATYPE_BYTEARRAY);
+  _cmd_id = gatt.addCharacteristic(LoRaWAN_CMD, GATT_CHARS_PROPERTIES_WRITE, 1, 1, BLE_DATATYPE_BYTEARRAY);
   _pkt_id = gatt.addCharacteristic(LoRaWAN_PKT, GATT_CHARS_PROPERTIES_WRITE, 1, 20, BLE_DATATYPE_BYTEARRAY);
-  _con_id = gatt.addCharacteristic(LoRaWAN_CON, GATT_CHARS_PROPERTIES_READ, 1, 1, BLE_DATATYPE_INTEGER);
-  _sts_id = gatt.addCharacteristic(LoRaWAN_STS, GATT_CHARS_PROPERTIES_READ | GATT_CHARS_PROPERTIES_INDICATE, 1, 1, BLE_DATATYPE_INTEGER);
+  _con_id = gatt.addCharacteristic(LoRaWAN_CON, GATT_CHARS_PROPERTIES_READ, 1, 1, BLE_DATATYPE_BYTEARRAY);
+  _sts_id = gatt.addCharacteristic(LoRaWAN_STS, GATT_CHARS_PROPERTIES_READ | GATT_CHARS_PROPERTIES_INDICATE, 1, 1, BLE_DATATYPE_BYTEARRAY);
   _snr_id = gatt.addCharacteristic(LoRaWAN_SNR, GATT_CHARS_PROPERTIES_READ, 1, 4, BLE_DATATYPE_BYTEARRAY);
 
   // set attribute values (pre-reset)
@@ -395,11 +395,8 @@ void loop() {
     debugSerial.print("sts: ");
     debugSerial.println(sts);
     gatt.setChar(_sts_id, sts);
-
-    delay(500);
-  } else {
-    delay(100);
   }
+  delay(100);
 }
 
 void updateSNR() {
@@ -416,7 +413,6 @@ void updateSNR() {
   } else {
     gatt.setChar(_snr_id, (uint8_t *)"unk", 3);
   }
-  delay(100);
 }
 
 bool queryLoRaBee(char *cmd, uint8_t* buffer, uint16_t size) {
