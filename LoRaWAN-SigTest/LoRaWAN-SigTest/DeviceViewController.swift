@@ -76,6 +76,7 @@ class DeviceViewController: UIViewController {
     }
     
     func timedUpdate() {
+        updateStatus()
         manager.requestStatusUpdate()
     }
     

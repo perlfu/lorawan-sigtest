@@ -50,13 +50,12 @@ class DeviceLocator: NSObject, CBCentralManagerDelegate {
         if ((peripheral.name == nil) || (peripheral.name == "")) {
             return
         }
-        if peripheral.name == "LoRaWAN-SigTest" {
-            log.add("DeviceLocator: ending search")
-            devicePeripheral = peripheral
-            manager.stopScan()
-            _searching = false
-            manager.connectPeripheral(peripheral, options: nil)
-        }
+        
+        log.add("DeviceLocator: ending search")
+        devicePeripheral = peripheral
+        manager.stopScan()
+        _searching = false
+        manager.connectPeripheral(peripheral, options: nil)
     }
     
     func centralManager(central: CBCentralManager, didConnectPeripheral peripheral: CBPeripheral) {
