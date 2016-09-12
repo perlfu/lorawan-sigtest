@@ -94,9 +94,9 @@ static uint8_t RN2483_connected = false;
 static uint8_t RN2483_port = 1;
 static uint8_t RN2483_retries = 3;
 static uint8_t hwEUI[8] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-static uint8_t devEUI[8] = { 0x00, 0x04, 0xA3, 0x0B, 0x00, 0x1A, 0xCA, 0xBE };
-static uint8_t appEUI[8] = { 0x70, 0xB3, 0xD5, 0x7E, 0xD0, 0x00, 0x07, 0x99 };
-static uint8_t appKey[16] = { 0x06, 0x75, 0x5B, 0x10, 0x25, 0x1A, 0x1D, 0x4C, 0xCC, 0x3B, 0xB4, 0xDF, 0xBE, 0x00, 0xA2, 0x1F };
+static uint8_t devEUI[8] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+static uint8_t appEUI[8] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+static uint8_t appKey[16] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
 // A small helper
 void error(const __FlashStringHelper*err) {
@@ -125,7 +125,6 @@ void initBLE() {
 
   /* Disable command echo from Bluefruit */
   ble.echo(false);
-  ble.sendCommandCheckOK("AT+GAPDEVNAME=LoRaWAN-SigTest");
 
   /* Print Bluefruit information */
   ble.info();
@@ -140,6 +139,9 @@ void initBLE() {
   if (!ble.isVersionAtLeast(MINIMUM_FIRMWARE_VERSION)) {
     error(F("Bluefruit bootloader must be at least version 0.7.0"));
   }
+
+  // Change name
+  ble.sendCommandCheckOK("AT+GAPDEVNAME=LoRaWAN-SigTest");
 
   // Set LED mode
   ble.sendCommandCheckOK("AT+HWModeLED=" MODE_LED_BEHAVIOUR);
@@ -191,6 +193,9 @@ void initBLE() {
   ble.waitForOK();
   delay(1000);
 
+  // reset device name
+  ble.sendCommandCheckOK("AT+GAPDEVNAME=LoRaWAN-SigTest");
+
   // set attribute values (post-reset)
   gatt.setChar(_hwEUI_id, hwEUI, sizeof(hwEUI));
   gatt.setChar(_devEUI_id, devEUI, sizeof(devEUI));
@@ -204,6 +209,11 @@ void initBLE() {
   gatt.setChar(_con_id, RN2483_connected);
   gatt.setChar(_sts_id, LoRaWAN_STS_None);
   gatt.setChar(_snr_id, (uint8_t *)"unk", 3);
+
+  // re-flash NVM (if required)
+  updateNVM(LoRaWAN_NVM_DEV_EUI, devEUI, sizeof(devEUI));
+  updateNVM(LoRaWAN_NVM_APP_EUI, appEUI, sizeof(appEUI));
+  updateNVM(LoRaWAN_NVM_APP_KEY, appKey, sizeof(appKey));
 }
 
 void loRaBeeSerialInit() {
